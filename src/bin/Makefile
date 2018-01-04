@@ -28,7 +28,7 @@ compiler-flags.cc: Makefile ${MK}
 
 dcd-recog: dcd-recog.o parse-options.o text-utils.o log.o utils.o gitrevision.o compiler-flags.o \
 	memdebug.o compiler-version.o cpu-stats.o config.o feat-readers.o
-	$(CXX)  $^ -o $@  $(LDFLAGS) $(LDLIBS) -lfst -lfstfarscript
+	$(CXX)  $^ -o $@  $(LDFLAGS) $(LDLIBS) -lfst -lfstfarscript -lfstfar
 
 dcd-recog-profile: dcd-recog.o parse-options.o text-utils.o log.o utils.o gitrevision.o compiler-flags.o \
 	memdebug.o compiler-version.o cpu-stats.o config.o feat-readers.o
