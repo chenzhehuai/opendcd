@@ -15,7 +15,10 @@ else
 endif
 DOTGITDIR+=../../.git
 CXXFLAGS+=-I$(KALDI_ROOT)/src/ -Wno-mismatched-tags -DHAVE_KALDI -I../include/
-FSTLIBDIR=$(KALDI_ROOT)/tools/openfst/
+FSTLIBDIR=$(shell cd ../../3rdparty/local/lib; pwd)
+#FSTLIBDIR=$(KALDI_ROOT)/tools/openfst/
+LDFLAGS+=-Wl,-rpath=$(FSTLIBDIR)
+LDLIBS+=$(FSTLIBDIR)/libfst.so
 
 gitrevision.cc: ${DOTGITDIR}/HEAD ${DOTGITDIR}/index
 	echo "const char* g_dcd_gitrevision = \"$(shell git rev-parse HEAD)\";" > $@
@@ -37,7 +40,6 @@ online2-wav-nnet2-am-compute2: online2-wav-nnet2-am-compute2.o
   $(KALDI_ROOT)/src/feat/kaldi-feat.a \
   $(KALDI_ROOT)/src/transform/kaldi-transform.a \
   $(KALDI_ROOT)/src/gmm/kaldi-gmm.a \
-  $(KALDI_ROOT)/src/thread/kaldi-thread.a \
   $(KALDI_ROOT)/src/hmm/kaldi-hmm.a \
   $(KALDI_ROOT)/src/tree/kaldi-tree.a \
   $(KALDI_ROOT)/src/matrix/kaldi-matrix.a \
@@ -63,13 +65,13 @@ lattice-to-far: lattice-to-far.o
 	$(KALDI_ROOT)/src/gmm/kaldi-gmm.a \
 	$(KALDI_ROOT)/src/hmm/kaldi-hmm.a \
 	$(KALDI_ROOT)/src/tree/kaldi-tree.a \
-  $(KALDI_ROOT)/src/base/kaldi-base.a \
 	$(KALDI_ROOT)/src/matrix/kaldi-matrix.a \
+  $(KALDI_ROOT)/src/base/kaldi-base.a \
 	$(ATLASLIBS)
 
-dcd-recog-kaldi: dcd-recog.o text-utils.o log.o utils.o compiler-flags.o \
+dcd-recog-kaldi: dcd-recog.o parse-options.o  text-utils.o log.o utils.o compiler-flags.o \
 	memdebug.o compiler-version.o cpu-stats.o config.o feat-readers.o gitrevision.o
-	$(CXX)  $^ -o $@  -L$(FSTLIBDIR)/lib/fst $(LDFLAGS) $(LDLIBS) \
+	$(CXX)  $^ -o $@  -L$(FSTLIBDIR)/fst  $(LDFLAGS) $(LDLIBS) \
 	$(KALDI_ROOT)/src/lat/kaldi-lat.a \
 	$(KALDI_ROOT)/src/feat/kaldi-feat.a \
 	$(KALDI_ROOT)/src/transform/kaldi-transform.a \
@@ -77,7 +79,6 @@ dcd-recog-kaldi: dcd-recog.o text-utils.o log.o utils.o compiler-flags.o \
 	$(KALDI_ROOT)/src/hmm/kaldi-hmm.a \
 	$(KALDI_ROOT)/src/tree/kaldi-tree.a \
 	$(KALDI_ROOT)/src/matrix/kaldi-matrix.a \
-	$(KALDI_ROOT)/src/thread/kaldi-thread.a \
 	$(KALDI_ROOT)/src/util/kaldi-util.a \
 	$(KALDI_ROOT)/src/base/kaldi-base.a \
 	$(ATLASLIBS)

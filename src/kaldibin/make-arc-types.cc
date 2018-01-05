@@ -79,7 +79,7 @@ GetHmmAsFstWithLoops(std::vector<int32> phone_window,
   for (int32 hmm_state = 0;
        hmm_state < static_cast<int32>(entry.size());
        hmm_state++) {
-    int32 pdf_class = entry[hmm_state].pdf_class, pdf;
+    int32 pdf_class = entry[hmm_state].forward_pdf_class, pdf;
     if (pdf_class == kNoPdf) 
       pdf = kNoPdf;  // nonemitting state; 
     //not generally used.
@@ -104,7 +104,7 @@ GetHmmAsFstWithLoops(std::vector<int32> phone_window,
         label = 0;
       } else {  // normal probability.
         int32 trans_state =
-            trans_model.TripleToTransitionState(phone, hmm_state, pdf);
+            trans_model.TupleToTransitionState(phone, hmm_state, pdf, pdf);
         int32 trans_id =
             trans_model.PairToTransitionId(trans_state, trans_idx);
         log_prob = opts.prob_scale * trans_model.GetTransitionLogProb(trans_id);
