@@ -5,6 +5,8 @@ EXP=$2
 GRAPH=$3
 KALDI_ROOT=$4
 
+stage=2
+
 tscale=1.0
 loopscale=0.1
 N=3
@@ -21,13 +23,15 @@ for f in $required; do
 done
 
 #Add openfst to path - use the one we built to ensure we have all dependencies
-export PATH=$PATH:../3rdparty/openfst-src/bin/
-export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../3rdparty/openfst-src/lib/:../3rdparty/openfst-src/lib/fst/
+export PATH=/export/a12/zchen/works/decoder/opendcd/3rdparty/openfst-src/src/bin/:$PATH
+export LD_LIBRARY_PATH=/export/a12/zchen/works/decoder/opendcd/3rdparty/openfst-src/src/lib/:/export/a12/zchen/works/decoder/opendcd//3rdparty/local/lib/fst/:$LD_LIBRARY_PATH
 
 mkdir -p ${GRAPH}
 
 #
 if [ 1 == 1 ]; then
+
+if [ $stage -le 1 ]; then
 fstpush --push_labels ${LANG}/L_disambig.fst |
   fstdeterminize - ${GRAPH}/det.L.fst
 
@@ -44,6 +48,9 @@ ${KALDI_ROOT}/src/fstbin/fstcomposecontext \
 awk '{print $1,0}' ${GRAPH}/disambig_ilabels_3_1.int | \
   cat ${GRAPH}/log2phys - > ${GRAPH}/cl.irelabel
 
+fi
+
+if [ $stage -le 2 ]; then
 #Relabel the input - this also removes the aux symbols
 #push the labels to aid composition and convert the olabel lookahead 
 #type
@@ -58,5 +65,6 @@ fstcompose ${GRAPH}/la.C.det.L.fst ${GRAPH}/G.fst | \
   fstconvert --fst_type=const - ${GRAPH}/C.det.L.G.fst 
 
 cp ${LANG}/words.txt ${GRAPH}/.
+fi
 
 fi
