@@ -9,7 +9,7 @@ tscale=1.0
 loopscale=1.0
 N=2
 P=1
-stage=3
+stage=2
 
 #required="$lang/L.fst $lang/G.fst $lang/phones.txt $lang/words.txt $lang/phones/silence.csl $lang/phones/disambig.int $model $tree"
 #for f in $required; do
@@ -58,13 +58,19 @@ cp ${GRAPH}/det.Ha.fst ${GRAPH}/la.Ha.fst
 #fstrelabel --relabel_ipairs=${GRAPH}/cl.irelabel ${GRAPH}/CL.fst \
     cat ${GRAPH}/CL.fst \
     | fstarcsort \
-  | fstcompose ${GRAPH}/la.Ha.fst - > ${GRAPH}/det.HaCL.fst
+  | fstcompose ${GRAPH}/la.Ha.fst - \
+  | fstdeterminize \
+  > ${GRAPH}/det.HaCL.fst
 
 ${KALDI_ROOT}/src/fstbin/fstrmsymbols \
   ${GRAPH}/h.disambig.int ${GRAPH}/det.HaCL.fst \
-  | ${KALDI_ROOT}/src/fstbin/fstrmepslocal | fstarcsort \
+  | ${KALDI_ROOT}/src/fstbin/fstrmepslocal \
+  | fstpushspecial \
+  | fstminimizeencoded  \
   | ${KALDI_ROOT}/src/bin/add-self-loops --self-loop-scale=$loopscale \
-  --reorder=true ${EXP}/final.mdl - > ${GRAPH}/HCL.fst
+  --reorder=true ${EXP}/final.mdl - \
+  | fstarcsort --sort_type=olabel \
+  > ${GRAPH}/HCL.fst
 fi
 
 if [ $stage -le 3 ]; then
