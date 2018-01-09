@@ -9,7 +9,7 @@ tscale=1.0
 loopscale=1.0
 N=2
 P=1
-stage=2
+stage=5
 
 #required="$lang/L.fst $lang/G.fst $lang/phones.txt $lang/words.txt $lang/phones/silence.csl $lang/phones/disambig.int $model $tree"
 #for f in $required; do
@@ -52,11 +52,11 @@ if [ $stage -le 2 ]; then
 cat ${GRAPH}/Ha.fst > ${GRAPH}/det.Ha.fst
 #fstdeterminize ${GRAPH}/Ha.fst > ${GRAPH}/det.Ha.fst
 
-#fstconvert --fst_type=olabel_lookahead \
-#  --save_relabel_opairs=${GRAPH}/cl.irelabel ${GRAPH}/det.Ha.fst > ${GRAPH}/la.Ha.fst
-cp ${GRAPH}/det.Ha.fst ${GRAPH}/la.Ha.fst
-#fstrelabel --relabel_ipairs=${GRAPH}/cl.irelabel ${GRAPH}/CL.fst \
-    cat ${GRAPH}/CL.fst \
+fstconvert --fst_type=olabel_lookahead \
+  --save_relabel_opairs=${GRAPH}/cl.irelabel ${GRAPH}/det.Ha.fst > ${GRAPH}/la.Ha.fst
+#cp ${GRAPH}/det.Ha.fst ${GRAPH}/la.Ha.fst
+#    cat ${GRAPH}/CL.fst \
+fstrelabel --relabel_ipairs=${GRAPH}/cl.irelabel ${GRAPH}/CL.fst \
     | fstarcsort \
   | fstcompose ${GRAPH}/la.Ha.fst - \
   | fstdeterminize \
@@ -87,3 +87,18 @@ rm $GRAPH/words.txt
  #awk 'NR==FNR{d[$2]=$1}NR!=FNR{if (d[$2]==""){d[$2]=$2};print $1,d[$2]}' $GRAPH/g.irelabel $LANG/words.txt | sort -k 2n |awk '{print $1,NR-1}' > $GRAPH/words.txt
  #awk 'NR==FNR{d[$1]=$2}NR!=FNR{if (d[$2]==""){d[$2]=$2};print $1,d[$2]}' $GRAPH/g.irelabel $LANG/words.txt | sort -k 2n |awk '{print $1,NR-1}' > $GRAPH/words.txt
  fi
+if [ $stage -le 5 ]; then
+fstcompose ${GRAPH}/left.fst ${GRAPH}/right.fst \
+    > $GRAPH/HcCLG.fst
+#    | fstconvert --fst_type=const  \
+fi
+if [ $stage -le 6 ]; then
+  cat  $GRAPH/HcCLG.fst \
+  | fstrmepslocal > $GRAPH/HcCLG.fst.re
+  cat $GRAPH/HcCLG.fst.re \
+  | fstpushspecial \
+  | fstminimizeencoded  \
+  | fstconvert --fst_type=const \
+  > $GRAPH/HCLG.fst
+
+fi
